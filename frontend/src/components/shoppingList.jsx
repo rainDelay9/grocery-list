@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Collapse, Button, CardBody, Card } from 'reactstrap';
 import ProductTable from './productTable';
 import AddProductForm from './addProductForm';
 import { genHexString } from '../utils/stringUtils';
