@@ -7,6 +7,8 @@ contract GroceryList {
         uint256 quantity;
     }
 
+    uint256[] public ids;
+    mapping(uint256 => uint256) public idToIndex;
     mapping(uint256 => Item) public groceries;
 
     modifier itemExists(uint256 _id) {
@@ -28,6 +30,8 @@ contract GroceryList {
     {
         uint256 id = _generateNewId(_name);
         groceries[id] = Item(true, _name, _quantity);
+        ids.push(id);
+        idToIndex[id] = ids.length;
         return id;
     }
 
@@ -40,8 +44,19 @@ contract GroceryList {
         return (groceries[_id].name, groceries[_id].quantity);
     }
 
+    function getAllIds() public view returns (uint256[] memory) {
+        return ids;
+    }
+
     function removeItem(uint256 _id) public itemExists(_id) {
         groceries[_id].exists = false;
+        uint256 index = idToIndex[_id];
+        if (ids.length > 1) {
+            ids[index] = ids[ids.length - 1];
+            idToIndex[ids[index]] = index;
+        }
+
+        ids.length--;
     }
 
     function incrementItem(uint256 _id) public itemExists(_id) {
