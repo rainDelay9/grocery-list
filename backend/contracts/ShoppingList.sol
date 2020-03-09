@@ -7,12 +7,17 @@ contract GroceryList {
         uint256 quantity;
     }
 
+    event ItemAdded(uint256 _id, string _name, uint256 _quantity);
+    event ItemRemoved(uint256 _id);
+    event ItemIncremented(uint256 _id, uint256 _quantity);
+    event ItemDecremented(uint256 _id, uint256 _quantity);
+
     uint256[] public ids;
     mapping(uint256 => uint256) public idToIndex;
     mapping(uint256 => Item) public groceries;
 
     modifier itemExists(uint256 _id) {
-        require(groceries[_id].exists);
+        require(groceries[_id].exists, "Item does not exist");
         _;
     }
 
@@ -29,10 +34,11 @@ contract GroceryList {
         returns (uint256)
     {
         uint256 id = _generateNewId(_name);
+        require(!groceries[id].exists, "Item already exists!");
         groceries[id] = Item(true, _name, _quantity);
         ids.push(id);
         idToIndex[id] = ids.length;
-        return id;
+        emit ItemAdded(id, _name, _quantity);
     }
 
     function getItem(uint256 _id)
@@ -55,15 +61,17 @@ contract GroceryList {
             ids[index] = ids[ids.length - 1];
             idToIndex[ids[index]] = index;
         }
-
         ids.length--;
+        emit ItemRemoved(_id);
     }
 
     function incrementItem(uint256 _id) public itemExists(_id) {
         groceries[_id].quantity++;
+        emit ItemIncremented(_id, groceries[_id].quantity);
     }
 
     function DecrementItem(uint256 _id) public itemExists(_id) {
         groceries[_id].quantity--;
+        emit ItemDecremented(_id, groceries[_id].quantity);
     }
 }

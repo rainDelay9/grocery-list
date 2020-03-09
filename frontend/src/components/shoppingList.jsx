@@ -8,33 +8,7 @@ class ShoppingList extends Component {
 	state = {
 		isOpen: false,
 		tableHeaders: ['#', 'Product', 'Quantity', ''],
-		products: [
-			{
-				name: 'milk',
-				quantity: 2,
-				id: '772f2505af8b98a744b93d16077f09b3'
-			},
-			{
-				name: 'oats',
-				quantity: 4,
-				id: '9b90a7bc1b5cd4828f984e9e66eb7b7b'
-			},
-			{
-				name: 'tortilla',
-				quantity: 2,
-				id: 'af39b8995c8424c6427873f6e010b290'
-			},
-			{
-				name: 'grapes',
-				quantity: 1,
-				id: 'ddaec73fae09c6148c381dd69d34c82b'
-			},
-			{
-				name: 'tomatoes',
-				quantity: 7,
-				id: '10c6c4d0ec90e8b45178dca0528c19de'
-			}
-		]
+		products: this.props.products
 	};
 
 	handleIncrement = product => {
@@ -89,12 +63,13 @@ class ShoppingList extends Component {
 	makeNewProductId = () => genHexString(32);
 
 	render() {
+		console.log(this.props.products);
 		return (
 			<div>
 				<div className='col'>
 					<ProductTable
 						headers={this.state.tableHeaders}
-						products={this.state.products}
+						products={this.props.products}
 						onIncrement={this.handleIncrement}
 						onDecrement={this.handleDecrement}
 						onErase={this.handleErase}
