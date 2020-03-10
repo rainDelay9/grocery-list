@@ -23,7 +23,7 @@ class AddProductForm extends Form {
 
 	doSubmit = () => {
 		// Call the server
-		this.props.onAdd(this.state.data);
+		this.props.onAdd(this.state.data.name, this.state.data.quantity);
 
 		// Clear data
 		this.setState({

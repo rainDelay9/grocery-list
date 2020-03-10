@@ -72,13 +72,13 @@ class ShoppingList extends Component {
 						products={this.props.products}
 						onIncrement={this.handleIncrement}
 						onDecrement={this.handleDecrement}
-						onErase={this.handleErase}
+						onErase={this.props.onDeleteFunctor}
 					/>
 				</div>
 				<div className='col'>
 					<Collapsible
 						buttonText='Add Product'
-						body={<AddProductForm onAdd={this.handleAddProduct} />}
+						body={<AddProductForm onAdd={this.props.onAdd} />}
 						isOpen={this.state.isOpen}
 						onToggle={this.handleToggle}
 					/>

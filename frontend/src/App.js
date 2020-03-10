@@ -48,8 +48,8 @@ class App extends Component {
 		this.setState({ items });
 
 		this.contract.events.ItemAdded([], (error, event) => {
-			console.log('Item Added!');
-			const items = this.items;
+			console.log('Item added!');
+			const items = [...this.state.items];
 			items.push({
 				id: event.returnValues[0],
 				name: event.returnValues[1],
@@ -58,25 +58,47 @@ class App extends Component {
 			this.setState({ items });
 		});
 
-		// console.log(ids);
+		this.contract.events.ItemRemoved([], (error, event) => {
+			console.log('Item removed!');
+			const id = event.returnValues[0];
+			const items = [...this.state.items].filter(item => item.id !== id);
+			this.setState({ items });
+		});
 
-		// const addItemTx = await groceryListContract.methods.addItem(
-		// 	'Bread',
-		// 	'4'
-		// );
-
-		// console.log(addItemTx);
-
-		// await addItemTx.send({
-		// 	from: account
-		// });
-
-		// console.log(ids);
+		this.contract.events.ItemQuantityChanged([], (error, event) => {
+			console.log('Item quantity changed!');
+			const id = event.returnValues[0];
+			const quantity = Number(event.returnValues[1]);
+			const items = [...this.state.items].map(item => {
+				if (item.id === id) item.quantity = quantity;
+				return item;
+			});
+			this.setState({ items });
+		});
 	}
+
+	handleDeleteFunctor = id => {
+		return () => {
+			this.contract.methods.removeItem(id).send({
+				from: this.account
+			});
+		};
+	};
+
+	handleAdd = (name, quantity) => {
+		this.contract.methods.addItem(name, quantity).send({
+			from: this.account
+		});
+	};
+
 	render() {
 		return (
 			<div className='App'>
-				<ShoppingList products={this.state.items} />
+				<ShoppingList
+					products={this.state.items}
+					onDeleteFunctor={this.handleDeleteFunctor}
+					onAdd={this.handleAdd}
+				/>
 			</div>
 		);
 	}

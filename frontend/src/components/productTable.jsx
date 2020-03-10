@@ -35,9 +35,7 @@ class ProductTable extends Component {
 								</button>
 								<button
 									className='btn btn-danger btn-sm'
-									onClick={() => {
-										this.props.onErase(product);
-									}}>
+									onClick={this.props.onErase(product.id)}>
 									X
 								</button>
 							</td>

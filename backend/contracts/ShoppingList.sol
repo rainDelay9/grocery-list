@@ -9,8 +9,7 @@ contract GroceryList {
 
     event ItemAdded(uint256 _id, string _name, uint256 _quantity);
     event ItemRemoved(uint256 _id);
-    event ItemIncremented(uint256 _id, uint256 _quantity);
-    event ItemDecremented(uint256 _id, uint256 _quantity);
+    event ItemQuantityChanged(uint256 _id, uint256 _quantity);
 
     uint256[] public ids;
     mapping(uint256 => uint256) public idToIndex;
@@ -67,11 +66,11 @@ contract GroceryList {
 
     function incrementItem(uint256 _id) public itemExists(_id) {
         groceries[_id].quantity++;
-        emit ItemIncremented(_id, groceries[_id].quantity);
+        emit ItemQuantityChanged(_id, groceries[_id].quantity);
     }
 
     function DecrementItem(uint256 _id) public itemExists(_id) {
         groceries[_id].quantity--;
-        emit ItemDecremented(_id, groceries[_id].quantity);
+        emit ItemQuantityChanged(_id, groceries[_id].quantity);
     }
 }
