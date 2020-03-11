@@ -21,21 +21,29 @@ class ProductTable extends Component {
 								<button
 									className='btn btn-info btn-sm mr-2'
 									onClick={() => {
-										this.props.onIncrement(product);
+										this.props.onQuantityChanged(
+											product.id,
+											product.quantity + 1
+										);
 									}}>
 									+
 								</button>
 								<button
 									className='btn btn-info btn-sm mr-2'
 									onClick={() => {
-										this.props.onDecrement(product);
+										this.props.onQuantityChanged(
+											product.id,
+											product.quantity - 1
+										);
 									}}
 									disabled={product.quantity === 0}>
 									-
 								</button>
 								<button
 									className='btn btn-danger btn-sm'
-									onClick={this.props.onErase(product.id)}>
+									onClick={() => {
+										this.props.onRemove(product.id);
+									}}>
 									X
 								</button>
 							</td>

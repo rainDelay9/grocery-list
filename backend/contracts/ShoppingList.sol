@@ -64,13 +64,11 @@ contract GroceryList {
         emit ItemRemoved(_id);
     }
 
-    function incrementItem(uint256 _id) public itemExists(_id) {
-        groceries[_id].quantity++;
-        emit ItemQuantityChanged(_id, groceries[_id].quantity);
-    }
-
-    function DecrementItem(uint256 _id) public itemExists(_id) {
-        groceries[_id].quantity--;
-        emit ItemQuantityChanged(_id, groceries[_id].quantity);
+    function changeQuantity(uint256 _id, uint256 _quantity)
+        public
+        itemExists(_id)
+    {
+        groceries[_id].quantity = _quantity;
+        emit ItemQuantityChanged(_id, _quantity);
     }
 }

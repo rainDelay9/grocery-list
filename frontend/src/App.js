@@ -29,9 +29,10 @@ class App extends Component {
 
 		await window.ethereum.enable();
 
-		let ids = await this.contract.methods.getAllIds().call({
-			from: this.account
-		});
+		let ids =
+			(await this.contract.methods.getAllIds().call({
+				from: this.account
+			})) || [];
 
 		const items = [];
 
@@ -47,46 +48,84 @@ class App extends Component {
 		}
 		this.setState({ items });
 
-		this.contract.events.ItemAdded([], (error, event) => {
-			console.log('Item added!');
-			const items = [...this.state.items];
-			items.push({
-				id: event.returnValues[0],
-				name: event.returnValues[1],
-				quantity: Number(event.returnValues[2])
+		this.contract.events
+			.ItemAdded([], (error, event) => {
+				const id = event.returnValues[0];
+				const name = event.returnValues[1];
+				const quantity = Number(event.returnValues[2]);
+				if (
+					this.state.items.some(item => {
+						return id === item.id;
+					})
+				) {
+					return;
+				}
+				const items = [...this.state.items];
+				items.push({
+					id: id,
+					name: name,
+					quantity: quantity
+				});
+				this.setState({ items });
+			})
+			.on('error', error => {
+				console.log(error);
 			});
-			this.setState({ items });
-		});
 
-		this.contract.events.ItemRemoved([], (error, event) => {
-			console.log('Item removed!');
-			const id = event.returnValues[0];
-			const items = [...this.state.items].filter(item => item.id !== id);
-			this.setState({ items });
-		});
-
-		this.contract.events.ItemQuantityChanged([], (error, event) => {
-			console.log('Item quantity changed!');
-			const id = event.returnValues[0];
-			const quantity = Number(event.returnValues[1]);
-			const items = [...this.state.items].map(item => {
-				if (item.id === id) item.quantity = quantity;
-				return item;
+		this.contract.events
+			.ItemRemoved([], (error, event) => {
+				const id = event.returnValues[0];
+				const items = [...this.state.items].filter(
+					item => item.id !== id
+				);
+				this.setState({ items });
+			})
+			.on('error', error => {
+				console.log(error);
 			});
-			this.setState({ items });
-		});
+
+		this.contract.events
+			.ItemQuantityChanged([], (error, event) => {
+				const id = event.returnValues[0];
+				const quantity = Number(event.returnValues[1]);
+				const items = [...this.state.items].map(item => {
+					if (item.id === id && item.quantity !== quantity)
+						item.quantity = quantity;
+					return item;
+				});
+				this.setState({ items });
+			})
+			.on('error', error => {
+				console.log(error);
+			});
 	}
 
-	handleDeleteFunctor = id => {
-		return () => {
-			this.contract.methods.removeItem(id).send({
-				from: this.account
-			});
-		};
+	handleRemove = async id => {
+		const removeItemTx = this.contract.methods.removeItem(id);
+		const gas = await removeItemTx.estimateGas({
+			from: this.account
+		});
+
+		removeItemTx.send({
+			from: this.account,
+			gas: gas
+		});
 	};
 
-	handleAdd = (name, quantity) => {
-		this.contract.methods.addItem(name, quantity).send({
+	handleAdd = async (name, quantity) => {
+		const addItemTx = this.contract.methods.addItem(name, quantity);
+
+		addItemTx
+			.send({
+				from: this.account
+			})
+			.catch(error => {
+				console.log(error);
+			});
+	};
+
+	handleQuantityChanged = (id, quantity) => {
+		this.contract.methods.changeQuantity(id, quantity).send({
 			from: this.account
 		});
 	};
@@ -96,8 +135,9 @@ class App extends Component {
 			<div className='App'>
 				<ShoppingList
 					products={this.state.items}
-					onDeleteFunctor={this.handleDeleteFunctor}
+					onRemove={this.handleRemove}
 					onAdd={this.handleAdd}
+					onQuantityChanged={this.handleQuantityChanged}
 				/>
 			</div>
 		);
