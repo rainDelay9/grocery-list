@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import ShoppingList from './components/shoppingList';
-import Web3 from 'web3';
 import './App.css';
 
 import * as artifact from './contracts/GroceryList';
+import { initWeb3, initContract } from './eth/web3Utils';
 
 class App extends Component {
 	state = {
@@ -11,34 +11,41 @@ class App extends Component {
 	};
 
 	async componentDidMount() {
-		const web3 = new Web3(
-			Web3.givenProvider ||
-				new Web3.providers.HttpProvider('https://127.0.0.1:9545')
-		);
+		await this.initEth();
 
-		this.contract = new web3.eth.Contract(
-			artifact.abi,
-			artifact.networks[0]
-		);
+		let ids = await this.getAllIds(this.contract, this.account);
 
-		this.contract.options.address =
-			'0x57E6BaC4a7fa676dF6D825A9a650eA242096Da6C';
+		this.initItems(this.contract, this.account, ids);
+
+		this.RegisterContractEventListeners();
+	}
+
+	initEth = async () => {
+		const web3 = await initWeb3();
+		this.contract = initContract(
+			web3,
+			artifact.default,
+			'0x57E6BaC4a7fa676dF6D825A9a650eA242096Da6C'
+		);
 
 		const accounts = await web3.eth.getAccounts();
 		this.account = accounts[0];
+	};
 
-		await window.ethereum.enable();
+	getAllIds = async (contract, account) => {
+		return (
+			(await contract.methods.getAllIds().call({
+				from: account
+			})) || []
+		);
+	};
 
-		let ids =
-			(await this.contract.methods.getAllIds().call({
-				from: this.account
-			})) || [];
-
+	initItems = async (contract, account, ids) => {
 		const items = [];
 
 		for (let id of ids) {
-			const response = await this.contract.methods.getItem(id).call({
-				from: this.account
+			const response = await contract.methods.getItem(id).call({
+				from: account
 			});
 			items.push({
 				id: id,
@@ -47,12 +54,17 @@ class App extends Component {
 			});
 		}
 		this.setState({ items });
+	};
 
+	RegisterContractEventListeners = () => {
+		//Item added event
 		this.contract.events
 			.ItemAdded([], (error, event) => {
 				const id = event.returnValues[0];
 				const name = event.returnValues[1];
 				const quantity = Number(event.returnValues[2]);
+
+				// Check if item already exists
 				if (
 					this.state.items.some(item => {
 						return id === item.id;
@@ -60,6 +72,8 @@ class App extends Component {
 				) {
 					return;
 				}
+
+				// Push new item
 				const items = [...this.state.items];
 				items.push({
 					id: id,
@@ -72,9 +86,11 @@ class App extends Component {
 				console.log(error);
 			});
 
+		// Item removed
 		this.contract.events
 			.ItemRemoved([], (error, event) => {
 				const id = event.returnValues[0];
+				//Filter item (this is resilient to multiple events firing)
 				const items = [...this.state.items].filter(
 					item => item.id !== id
 				);
@@ -84,10 +100,12 @@ class App extends Component {
 				console.log(error);
 			});
 
+		// Item quantity changed
 		this.contract.events
 			.ItemQuantityChanged([], (error, event) => {
 				const id = event.returnValues[0];
 				const quantity = Number(event.returnValues[1]);
+				// Set the correct quantity
 				const items = [...this.state.items].map(item => {
 					if (item.id === id && item.quantity !== quantity)
 						item.quantity = quantity;
@@ -98,7 +116,7 @@ class App extends Component {
 			.on('error', error => {
 				console.log(error);
 			});
-	}
+	};
 
 	handleRemove = async id => {
 		const removeItemTx = this.contract.methods.removeItem(id);
