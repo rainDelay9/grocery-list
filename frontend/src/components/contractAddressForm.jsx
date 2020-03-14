@@ -1,4 +1,6 @@
+import React from 'react';
 import Form from './common/form';
+import Joi from 'joi-browser';
 
 class ContractAddressForm extends Form {
 	state = {
@@ -9,7 +11,7 @@ class ContractAddressForm extends Form {
 	schema = {
 		address: Joi.string()
 			.alphanum()
-			.regex('^0x[A-Fa-f0-9]{40}/')
+			.regex(new RegExp('^0x[A-Fa-f0-9]{40}'))
 			.required()
 			.label('Contract Address')
 	};

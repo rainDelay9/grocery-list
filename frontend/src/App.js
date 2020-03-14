@@ -4,23 +4,36 @@ import './App.css';
 
 import * as artifact from './contracts/GroceryList';
 import { initWeb3, initContract } from './eth/web3Utils';
+import ContractAddressForm from './components/contractAddressForm';
 
 class App extends Component {
 	state = {
-		items: []
+		items: [],
+		address: '',
+		web3Initialized: false
 	};
 
-	async componentDidMount() {
+	async componentDidUpdate() {
 		await this.initEth();
+	}
+
+	initEth = async () => {
+		if (!this.state.address) return;
+		if (this.state.web3Initialized) return;
+		await this.initEthContract();
 
 		let ids = await this.getAllIds(this.contract, this.account);
 
 		this.initItems(this.contract, this.account, ids);
 
 		this.RegisterContractEventListeners();
-	}
 
-	initEth = async () => {
+		this.setState((state, props) => ({
+			web3Initialized: true
+		}));
+	};
+
+	initEthContract = async () => {
 		const web3 = await initWeb3();
 		this.contract = initContract(
 			web3,
@@ -148,15 +161,38 @@ class App extends Component {
 		});
 	};
 
+	handleContractAddressSubmit = address => {
+		console.log(address);
+		this.setState({ address });
+		console.log(this.state);
+	};
+
+	renderContractAddress = () => {
+		return <div></div>;
+	};
+
 	render() {
 		return (
 			<div className='App'>
-				<ShoppingList
-					products={this.state.items}
-					onRemove={this.handleRemove}
-					onAdd={this.handleAdd}
-					onQuantityChanged={this.handleQuantityChanged}
-				/>
+				{this.state.address ? (
+					<div>
+						<p> Contract Address: </p>
+						<p> {this.state.address} </p>
+						<ShoppingList
+							products={this.state.items}
+							onRemove={this.handleRemove}
+							onAdd={this.handleAdd}
+							addingEnabled={this.state.address}
+							onQuantityChanged={this.handleQuantityChanged}
+						/>
+					</div>
+				) : (
+					<div>
+						<ContractAddressForm
+							onSubmit={this.handleContractAddressSubmit}
+						/>
+					</div>
+				)}
 			</div>
 		);
 	}

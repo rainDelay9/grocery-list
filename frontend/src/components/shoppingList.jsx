@@ -48,6 +48,22 @@ class ShoppingList extends Component {
 		this.setState({ isOpen: !this.state.isOpen });
 	};
 
+	renderAddArea = () => {
+		console.log(this.props.addingEnabled);
+		return (
+			<div>
+				{this.props.addingEnabled ? (
+					<Collapsible
+						buttonText='Add Product'
+						body={<AddProductForm onAdd={this.props.onAdd} />}
+						isOpen={this.state.isOpen}
+						onToggle={this.handleToggle}
+					/>
+				) : null}
+			</div>
+		);
+	};
+
 	render() {
 		return (
 			<div>
