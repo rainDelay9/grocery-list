@@ -97,4 +97,13 @@ contract('ShoppingList', function(accounts) {
 			'Read item quantity is not correct'
 		);
 	});
+
+	it("should revert if changing quantity for item that doesn't exist", async () => {
+		await instance.addItem(items[0].name, items[0].quantity);
+		try {
+			await instance.changeQuantity('0000000000000000000000000', 5);
+		} catch (err) {
+			assert.ok(/revert/.test(err.message));
+		}
+	});
 });
