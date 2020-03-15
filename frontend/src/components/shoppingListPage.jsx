@@ -13,13 +13,23 @@ class ShoppingListPage extends Component {
 	};
 
 	async componentDidMount() {
-		const errorInAddress = this.validateProperty({
-			name: 'address',
-			value: this.props.match.params.address
-		});
-		if (errorInAddress) this.props.history.replace('/not-found');
+		//validate address is correct
+		if (
+			this.getErrorFromProperty({
+				name: 'address',
+				value: this.props.match.params.address
+			})
+		) {
+			return this.onError('address-is-incorrect');
+		}
+
+		//initialize smart contract
 		await this.initEth();
 	}
+
+	onError = async address => {
+		this.props.history.replace(`/error/${address}`);
+	};
 
 	schema = {
 		address: Joi.string()
@@ -29,11 +39,9 @@ class ShoppingListPage extends Component {
 			.label('Contract Address')
 	};
 
-	validateProperty = ({ name, value }) => {
-		console.log(name, value);
+	getErrorFromProperty = ({ name, value }) => {
 		const obj = { [name]: value };
 		const schema = { [name]: this.schema[name] };
-		console.log(schema);
 		const { error } = Joi.validate(obj, schema);
 		return error ? error.details[0].message : null;
 	};
@@ -42,19 +50,27 @@ class ShoppingListPage extends Component {
 		this.setState({
 			address: this.props.match.params.address
 		});
+		try {
+			await this.initEthContract();
 
-		await this.initEthContract();
+			let ids = await this.getAllIds(this.contract, this.account);
 
-		let ids = await this.getAllIds(this.contract, this.account);
+			this.initItems(this.contract, this.account, ids);
 
-		this.initItems(this.contract, this.account, ids);
-
-		this.RegisterContractEventListeners();
+			this.RegisterContractEventListeners();
+		} catch {
+			return this.onError('Something-went-wrong-with-ETH-initialization');
+		}
 	};
 
 	initEthContract = async () => {
 		const web3 = await initWeb3();
-		this.contract = initContract(web3, artifact.default, this.address);
+
+		this.contract = initContract(
+			web3,
+			artifact.default,
+			this.props.match.params.address
+		);
 
 		const accounts = await web3.eth.getAccounts();
 		this.account = accounts[0];
@@ -186,7 +202,7 @@ class ShoppingListPage extends Component {
 		return (
 			<div className='App'>
 				<p> Contract Address: </p>
-				<p> {this.state.address} </p>
+				<p> {this.state.address.toUpperCase()} </p>
 				<ShoppingList
 					products={this.state.items}
 					onRemove={this.handleRemove}

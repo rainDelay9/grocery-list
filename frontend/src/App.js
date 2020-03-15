@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import ShoppingListPage from './components/shoppingListPage';
 import ContractAddressForm from './components/contractAddressForm';
-import NotFound from './components/common/notFound';
+import Error from './components/common/error';
 
 import './App.css';
 
@@ -20,9 +20,9 @@ class App extends Component {
 						path='/shopping-list/:address'
 						component={ShoppingListPage}
 					/>
-					<Route path='/not-found' component={NotFound} />
+					<Route path='/error/:message' component={Error} />
 					<Redirect exact from='/' to='/address' />
-					<Redirect to='/not-found' />
+					<Redirect to='/error/page-not-found' />
 				</Switch>
 			</div>
 		);
