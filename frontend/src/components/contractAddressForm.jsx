@@ -1,5 +1,6 @@
 import React from 'react';
 import Form from './common/form';
+import { withRouter } from 'react-router-dom';
 import Joi from 'joi-browser';
 
 class ContractAddressForm extends Form {
@@ -16,9 +17,13 @@ class ContractAddressForm extends Form {
 			.label('Contract Address')
 	};
 
+	onSubmit = address => {
+		this.props.history.push(`/shopping-list/${address}`);
+	};
+
 	doSubmit = () => {
 		// Call the server
-		this.props.onSubmit(this.state.data.address);
+		this.onSubmit(this.state.data.address);
 
 		// Clear data
 		this.setState({
@@ -40,4 +45,4 @@ class ContractAddressForm extends Form {
 	}
 }
 
-export default ContractAddressForm;
+export default withRouter(ContractAddressForm);
