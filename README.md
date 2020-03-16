@@ -6,6 +6,12 @@ This is a test ETH+React.js-based grocery list app.
 ## Backend
 The backend uses ETH smart contract. There's actually no need for that, but I wanted to do something with solidity on my own and not through tutorials, so what the heck. It was built using [Truffle](https://www.trufflesuite.com/), and tested (besides unit testing) using [Metamask](https://metamask.io/) which sometimes works, and sometimes does not.
 
+### Using an Already Deployed Contract (Ropsten Testnet)
+For your convenience I have already deployed a version of the smart contract updated to March 16, 2020. All you need is to hook yourself up with some Ropsten Ether and use the following contract address (see frontend):
+```
+0x57E6BAC4A7FA676DF6D825A9A650EA242096DA6C
+```
+
 ### Deploying Locally w/ Truffle Dev
 to deploy with truffle (after installing) use
 ```bash
