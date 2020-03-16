@@ -7,6 +7,10 @@ import Error from './components/common/error';
 import './App.css';
 
 class App extends Component {
+	componentDidMount() {
+		document.title = 'Grocery List';
+	}
+
 	render() {
 		return (
 			<div className='App'>
